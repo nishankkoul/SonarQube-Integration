@@ -32,7 +32,7 @@ pipeline {
         
         stage("Sonarqube Analysis") {
             environment {
-                SONAR_URL = "http://<SonarQube-URL>:9000/" // Use your SonarQube VM IP address here
+                SONAR_URL = "http://3.91.16.117/:9000/" // Use your SonarQube VM IP address here
             }
             steps {
                 withSonarQubeEnv('sonar-server') {
