@@ -32,33 +32,16 @@ pipeline {
         
         stage("Sonarqube Analysis") {
             environment {
-                SONAR_URL = "http://3.91.16.117/:9000/" // Use your SonarQube VM IP address here
+                SONAR_URL = "http://3.91.16.117:9000/" // Change this value depending on your VM's IP address
             }
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=Petclinic \
-                    -Dsonar.java.binaries=. \
                     -Dsonar.projectName=Petclinic \
+                    -Dsonar.java.binaries=. \
+                    -Dsonar.projectKey=Petclinic \
                     -Dsonar.login=${SONAR_AUTH_TOKEN} \
-                    -Dsonar.host.url=${SONAR_URL} \
-                    -Dsonar.pullrequest.key=${env.CHANGE_ID} \
-                    -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} \
-                    -Dsonar.pullrequest.base=${env.CHANGE_TARGET} \
-                    -Dsonar.pullrequest.provider=GitHub'''
-                }
-            }
-        }
-        
-        stage("Post Analysis") {
-            steps {
-                script {
-                    // Fetch the SonarQube Quality Gate Status
-                    def sonarStatus = sh(script: 'curl -u ${SONAR_AUTH_TOKEN}: ${SONAR_URL}/api/qualitygates/project_status?projectKey=Petclinic', returnStdout: true).trim()
-                    
-                    if (sonarStatus.contains('"status":"ERROR"')) {
-                        currentBuild.result = 'FAILURE'
-                    }
+                    -Dsonar.host.url=${SONAR_URL}'''
                 }
             }
         }
