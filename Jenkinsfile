@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        GITHUB_TOKEN = credentials('github-token')
+        GITHUB_TOKEN = credentials('github')
         SONAR_URL = "http://3.91.16.117:9000/" // Change this value depending on your VM's IP address
         REPO_URL = "https://github.com/nishankkoul/SonarQube-Integration.git"
     }
