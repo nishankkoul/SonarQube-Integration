@@ -23,16 +23,9 @@ pipeline {
                 sh "mvn clean compile"
             }
         }
-        
-         stage("Test Cases"){
-            steps{
-                sh "mvn test"
-            }
-        }
-        
         stage("Sonarqube Analysis "){
             environment {
-                SONAR_URL = "http://13.127.137.122:9000/" //Change this value depending upon your VM's IP Address
+                SONAR_URL = "http://3.91.16.117:9000/" //Change this value depending upon your VM's IP Address
             }
             steps{
                 withSonarQubeEnv('sonar-server') {
