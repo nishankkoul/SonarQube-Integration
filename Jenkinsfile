@@ -1,38 +1,40 @@
 pipeline {
     agent any 
     
-    tools{
+    tools {
         jdk 'jdk17'
         maven 'maven3'
     }
     
     environment {
-        SCANNER_HOME=tool 'sonar-scanner'
+        SCANNER_HOME = tool 'sonar-scanner'
     }
     
-    stages{
+    stages {
         
-        stage("Git Checkout"){
-            steps{
+        stage("Git Checkout") {
+            steps {
                 git branch: 'main', changelog: false, poll: false, url: 'https://github.com/nishankkoul/SonarQube-Integration.git'
             }
         }
         
-        stage("Compile"){
-            steps{
+        stage("Compile") {
+            steps {
                 sh "mvn clean compile"
             }
         }
-        stage("Sonarqube Analysis "){
+        
+        stage("Sonarqube Analysis") {
             environment {
-                SONAR_URL = "http://3.91.16.117:9000/" //Change this value depending upon your VM's IP Address
+                SONAR_URL = "http://3.91.16.117:9000/" // Change this value depending on your VM's IP address
             }
-            steps{
+            steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectName=Petclinic \
                     -Dsonar.java.binaries=. \
-                    -Dsonar.projectKey=Petclinic 
-                    -Dsonar.login=${SONAR_AUTH_TOKEN}
+                    -Dsonar.projectKey=Petclinic \
+                    -Dsonar.login=${SONAR_AUTH_TOKEN} \
                     -Dsonar.host.url=${SONAR_URL}'''
                 }
             }
