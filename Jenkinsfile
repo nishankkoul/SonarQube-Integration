@@ -23,6 +23,12 @@ pipeline {
                 sh "mvn clean compile"
             }
         }
+
+        stage("Test Cases"){
+            steps{
+                sh "mvn test"
+            }
+        }
         
         stage("Sonarqube Analysis") {
             environment {
