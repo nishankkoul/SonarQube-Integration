@@ -37,9 +37,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     script {
-                        def sonarScanner = "${SCANNER_HOME}/bin/sonar-scanner"
-                        def branchName = env.GIT_BRANCH.replaceAll("origin/", "")
-                        
+                        def sonarScanner = "${SCANNER_HOME}/bin/sonar-scanner"                        
                         def sonarScannerParams = "-Dsonar.projectName=Petclinic " +
                                                  "-Dsonar.java.binaries=. " +
                                                  "-Dsonar.projectKey=Petclinic " +
