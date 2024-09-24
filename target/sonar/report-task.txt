@@ -1,0 +1,6 @@
+projectKey=sonarqube-github
+serverUrl=http://3.85.210.203:9000
+serverVersion=10.6.0.92116
+dashboardUrl=http://3.85.210.203:9000/dashboard?id=sonarqube-github
+ceTaskId=900c5bf5-f8f1-4b7d-b8ff-a6f1b6c7a869
+ceTaskUrl=http://3.85.210.203:9000/api/ce/task?id=900c5bf5-f8f1-4b7d-b8ff-a6f1b6c7a869
