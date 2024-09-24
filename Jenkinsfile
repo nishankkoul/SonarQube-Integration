@@ -34,7 +34,7 @@ pipeline {
         
         stage("Sonarqube Analysis") {
             environment {
-                SONAR_URL = "http://3.91.16.117:9000/" // Change this value depending on your VM's IP address
+                SONAR_URL = "https://sonar.bimaplan.co/" // Change this value depending on your VM's IP address
             }
             steps {
                 withSonarQubeEnv('sonar-server') {
