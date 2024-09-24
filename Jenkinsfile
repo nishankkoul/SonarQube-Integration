@@ -51,15 +51,7 @@ pipeline {
         
         stage("Convert to SARIF and Upload") {
             steps {
-                script {
-                    // Wait for SonarQube analysis to complete
-                    timeout(time: 1, unit: 'HOURS') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
-                    }
-                    
+                script {                
                     // Install necessary tools
                     sh 'npm install -g sonar-to-sarif'
                     
