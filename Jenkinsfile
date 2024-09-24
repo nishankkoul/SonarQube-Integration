@@ -39,9 +39,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectName=Petclinic \
+                    -Dsonar.projectName=SonarQube-Integration \
                     -Dsonar.java.binaries=. \
-                    -Dsonar.projectKey=Petclinic \
+                    -Dsonar.projectKey=nishankkoul_SonarQube-Integration_666b06b4-e5b6-426e-8184-54e9b1a8da33 \
                     -Dsonar.login=${SONAR_AUTH_TOKEN} \
                     -Dsonar.host.url=${SONAR_URL}'''
                 }
