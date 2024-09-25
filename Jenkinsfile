@@ -12,7 +12,6 @@ pipeline {
         SONAR_URL = "https://sonar.bimaplan.co"
         PROJECT_KEY = "nishankkoul_SonarQube-Integration_97348d7f-60ff-44e0-a41c-402d64568bf8"
         GITHUB_REPO = "nishankkoul/SonarQube-Integration"
-        SARIF_FILE = "sonar-results.sarif"
     }
     
     stages {
@@ -44,7 +43,8 @@ pipeline {
                 }
             }
         }
-            
+    }
+
     post {
         always {
             cleanWs()
