@@ -31,8 +31,12 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Build and analyze
+      - name: Build and Analyze
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=nishankkoul_SonarQube-Integration_31e1e31b-01b8-4710-ba95-795bf79e7f58 -Dsonar.projectName='SonarQube-Integration'
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Your SonarQube token
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}  # Your SonarQube host URL
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=nishankkoul_SonarQube-Integration_31e1e31b-01b8-4710-ba95-795bf79e7f58 \
+          -Dsonar.projectName='SonarQube-Integration' \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}  # Make sure to use sonar.login
