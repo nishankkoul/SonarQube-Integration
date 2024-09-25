@@ -1,5 +1,5 @@
 pipeline {
-    agent any 
+    agent any
     
     tools {
         jdk 'jdk17'
@@ -54,6 +54,8 @@ pipeline {
                             curl -s -u \${SONAR_AUTH_TOKEN}: "${SONAR_URL}/api/ce/component?component=${encodedProjectKey}" | jq -r '.current.analysisId'
                         """, returnStdout: true).trim()
                         
+                        echo "Retrieved SonarQube Analysis ID: ${sonarAnalysisId}"  // Debugging line
+
                         if (sonarAnalysisId && sonarAnalysisId != "null") {
                             echo "Analysis ID: ${sonarAnalysisId}"
                             sh """
@@ -67,27 +69,11 @@ pipeline {
             }
         }
 
-        stage("Import SARIF to SonarQube") {
-            steps {
-                withSonarQubeEnv('sonar-server') {
-                    sh """
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectName=SonarQube-Integration \
-                    -Dsonar.projectKey=$PROJECT_KEY \
-                    -Dsonar.sources=src/main/java \
-                    -Dsonar.java.binaries=target/classes \
-                    -Dsonar.java.libraries=target/dependency/*.jar \
-                    -Dsonar.host.url=$SONAR_URL \
-                    -Dsonar.sarifReportPaths=${SARIF_FILE}
-                    """
-                }
-            }
-        }
-
         stage("Upload SARIF to GitHub Code Scanning") {
             steps {
                 script {
                     def commitSha = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
+                    echo "Commit SHA: ${commitSha}"  // Debugging line
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                         sh """
                         curl -X POST \
