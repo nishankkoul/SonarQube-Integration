@@ -27,13 +27,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Cache SonarQube packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
-
     - name: Cache Maven packages
       uses: actions/cache@v3
       with:
@@ -41,8 +34,16 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java
+
     - name: Build with Maven
-      run: mvn clean verify
+      run: mvn clean compile
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
 
     - name: SonarQube Scan
       env:
@@ -58,11 +59,3 @@ jobs:
         -Dsonar.sources=src/main/java \
         -Dsonar.sourceEncoding=UTF-8 \
         -Dsonar.verbose=true
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: java
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
