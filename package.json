@@ -1,0 +1,24 @@
+{
+    "name": "Petclinic",
+    "version": "1.0.0",
+    "scripts": {
+      "lint": "eslint . --format sarif --output-file results.sarif",
+      "test": "mvn test" 
+    },
+    "devDependencies": {
+      "eslint": "^9.11.1" 
+    },
+    "eslintConfig": {
+      "env": {
+        "browser": true,
+        "es2021": true
+      },
+      "extends": "eslint:recommended",
+      "parserOptions": {
+        "ecmaVersion": 12
+      }
+    },
+    "author": "Your Name",
+    "license": "MIT"
+  }
+  
