@@ -8,18 +8,7 @@
     "devDependencies": {
       "eslint": "^9.11.1" 
     },
-    "eslintConfig": {
-      "languageOptions": {
-        "globals": {
-          "window": "readonly",
-          "document": "readonly"
-        },
-        "parserOptions": {
-          "ecmaVersion": 12
-        }
-      }
-    },
-    "author": "Nishank Koul",
+    "author": "Nishank",
     "license": "MIT"
   }
   
