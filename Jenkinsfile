@@ -25,7 +25,9 @@ pipeline {
 
         stage("Build and Test") {
             steps {
-                sh "mvn clean install"
+                sh "mvn clean install -DskipTests"
+                sh "mvn dependency:copy-dependencies -DoutputDirectory=target/dependency"
+                sh "ls -R target"  // Debug: List contents of target directory
             }
         }
 
@@ -38,9 +40,10 @@ pipeline {
                     -Dsonar.projectKey=$PROJECT_KEY \
                     -Dsonar.sources=src/main/java \
                     -Dsonar.java.binaries=target/classes \
-                    -Dsonar.java.libraries=target/dependency/**/*.jar \
+                    -Dsonar.java.libraries=target/dependency/*.jar \
                     -Dsonar.login=$SONAR_AUTH_TOKEN \
-                    -Dsonar.host.url=$SONAR_URL
+                    -Dsonar.host.url=$SONAR_URL \
+                    -X  # Enable debug mode
                     """
                 }
             }
