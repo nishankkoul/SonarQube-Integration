@@ -1,14 +1,13 @@
 {
     "name": "Petclinic",
     "version": "1.0.0",
+    "type": "module",
     "scripts": {
-      "lint": "eslint . --format sarif --output-file results.sarif",
-      "test": "mvn test" 
+      "lint": "eslint . --format sarif --output-file results.sarif"
     },
     "devDependencies": {
-      "eslint": "^9.11.1" 
-    },
-    "author": "Nishank",
-    "license": "MIT"
+      "eslint": "^9.11.1",
+      "globals": "^15.0.0" 
+    }
   }
   
