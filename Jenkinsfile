@@ -55,19 +55,24 @@ pipeline {
         stage("Upload SARIF to GitHub Code Scanning") {
             steps {
                 script {
+                    def commitSha = sh(
+                        script: 'git rev-parse HEAD',
+                        returnStdout: true
+                    ).trim()
+
                     // Upload SARIF file to GitHub Code Scanning API
                     def response = sh(
                         script: """
                         curl -X POST https://api.github.com/repos/${GITHUB_REPO}/code-scanning/sarifs \
                         -H "Authorization: token $GITHUB_TOKEN" \
                         -H "Accept: application/vnd.github.v3+json" \
-                        -F "commit_sha=$(git rev-parse HEAD)" \
+                        -F "commit_sha=$commitSha" \
                         -F "ref=refs/heads/main" \
                         -F "sarif=@$SARIF_FILE"
                         """, 
                         returnStdout: true
                     ).trim()
-                    echo "GitHub Response: ${response}"
+                    echo "GitHub Response: $response"
                 }
             }
         }
