@@ -41,7 +41,8 @@ jobs:
           sudo mv sonar-scanner-6.2.0.4584-linux-x64 /opt/sonar-scanner
           echo "SONAR_SCANNER_HOME=/opt/sonar-scanner" >> $GITHUB_ENV
           echo "$SONAR_SCANNER_HOME/bin" >> $GITHUB_PATH
-      
+          ls /opt/sonar-scanner/bin  # Verify the installation
+
       - name: Build and Analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Your SonarQube token
