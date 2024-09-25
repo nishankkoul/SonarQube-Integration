@@ -78,6 +78,7 @@ pipeline {
                     }
                 }
             }
+        } // <-- This closing bracket was missing
 
         stage("Upload SARIF to GitHub Code Scanning") {
             steps {
