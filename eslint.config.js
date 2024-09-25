@@ -1,19 +1,21 @@
 // eslint.config.js
-module.exports = {
-    env: {
-        browser: true,
-        es2021: true,
+import globals from "globals";
+
+export default [
+    {
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType: "module",
+            globals: {
+                ...globals.browser,
+                ...globals.node,
+                myCustomGlobal: "readonly", // Replace with your custom globals if any
+            },
+        },
+        // Add your rules and other configurations here
+        rules: {
+            // Example rule
+            "no-unused-vars": "warn",
+        },
     },
-    extends: [
-        'eslint:recommended',
-        // Add any other configurations you want to extend
-    ],
-    parserOptions: {
-        ecmaVersion: 12,
-        sourceType: 'module',
-    },
-    rules: {
-        // Customize your rules here
-        'no-console': 'off', // Example rule
-    },
-};
+];
