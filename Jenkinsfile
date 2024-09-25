@@ -14,6 +14,7 @@ pipeline {
         SONAR_URL = "https://sonar.bimaplan.co/"
         PROJECT_KEY = "nishankkoul_SonarQube-Integration_666b06b4-e5b6-426e-8184-54e9b1a8da33"
         GITHUB_REPO = "nishankkoul/SonarQube-Integration"
+        SARIF_FILE = "results.sarif" // Define the SARIF file path
     }
     
     stages {
@@ -44,42 +45,29 @@ pipeline {
                     -Dsonar.java.binaries=. \
                     -Dsonar.projectKey=$PROJECT_KEY \
                     -Dsonar.login=$SONAR_AUTH_TOKEN \
-                    -Dsonar.host.url=$SONAR_URL
+                    -Dsonar.host.url=$SONAR_URL \
+                    -Dsonar.sarif.reportPaths=$SARIF_FILE
                     """
                 }
             }
         }
         
-        stage("Convert to SARIF and Upload") {
+        stage("Upload SARIF to GitHub Code Scanning") {
             steps {
-                script {                
-                    // Install necessary tools
-                    sh 'npm install -g sonar-to-sarif'
-                    
-                    // Convert SonarQube issues to SARIF
-                    sh """
-                    sonar-to-sarif \
-                        --url $SONAR_URL \
-                        --token $SONAR_AUTH_TOKEN \
-                        --project $PROJECT_KEY \
-                        --output sonarqube-results.sarif
-                    """
-                    
-                    // Upload SARIF to GitHub
-                    def sarifContent = readFile('sonarqube-results.sarif')
-                    def encodedSarif = sarifContent.bytes.encodeBase64().toString()
-                    
-                    sh """
-                    curl -X POST \
-                        -H "Authorization: token $GITHUB_TOKEN" \
+                script {
+                    // Upload SARIF file to GitHub Code Scanning API
+                    def response = sh(
+                        script: """
+                        curl -X POST https://api.github.com/repos/${GITHUB_REPO}/code-scanning/sarifs \
+                        -H "Authorization: token ${GITHUB_TOKEN}" \
                         -H "Accept: application/vnd.github.v3+json" \
-                        https://api.github.com/repos/$GITHUB_REPO/code-scanning/sarifs \
-                        -d '{
-                            "commit_sha": "'"$GIT_COMMIT"'",
-                            "ref": "refs/heads/main",
-                            "sarif": "'"$encodedSarif"'"
-                        }'
-                    """
+                        -F "commit_sha=$(git rev-parse HEAD)" \
+                        -F "ref=refs/heads/main" \
+                        -F "sarif=@${SARIF_FILE}"
+                        """, 
+                        returnStdout: true
+                    ).trim()
+                    echo "GitHub Response: ${response}"
                 }
             }
         }
