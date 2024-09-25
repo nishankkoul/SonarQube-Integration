@@ -36,9 +36,9 @@ jobs:
       
       - name: Install Sonar Scanner
         run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.0.4584-linux-x64.zip
-          unzip sonar-scanner-cli-6.2.0.4584-linux-x64.zip
-          sudo mv sonar-scanner-6.2.0.4584-linux-x64 /opt/sonar-scanner
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.0.4584-linux-aarch64.zip
+          unzip sonar-scanner-cli-6.2.0.4584-linux-aarch64.zip
+          sudo mv sonar-scanner-6.2.0.4584-linux-aarch64 /opt/sonar-scanner
           echo "SONAR_SCANNER_HOME=/opt/sonar-scanner" >> $GITHUB_ENV
           echo "$SONAR_SCANNER_HOME/bin" >> $GITHUB_PATH
           ls /opt/sonar-scanner/bin  # Verify the installation
