@@ -49,7 +49,7 @@ pipeline {
             }
         }
 
-stage("Generate SARIF") {
+        stage("Generate SARIF") {
             steps {
                 script {
                     def encodedProjectKey = URLEncoder.encode(PROJECT_KEY, "UTF-8")
@@ -77,6 +77,7 @@ stage("Generate SARIF") {
                         }
                     }
                 }
+            }
 
         stage("Upload SARIF to GitHub Code Scanning") {
             steps {
