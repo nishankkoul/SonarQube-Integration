@@ -23,15 +23,9 @@ pipeline {
             }
         }
 
-        stage("Compile") {
+        stage("Build and Test") {
             steps {
-                sh "mvn clean compile"
-            }
-        }
-
-        stage("Test") {
-            steps {
-                sh "mvn test"
+                sh "mvn clean install"
             }
         }
 
@@ -41,15 +35,21 @@ pipeline {
                     sh """
                     $SCANNER_HOME/bin/sonar-scanner \
                     -Dsonar.projectName=SonarQube-Integration \
-                    -Dsonar.java.binaries=target/classes \
                     -Dsonar.projectKey=$PROJECT_KEY \
                     -Dsonar.sources=src/main/java \
+                    -Dsonar.java.binaries=target/classes \
+                    -Dsonar.java.libraries=target/dependency/**/*.jar \
                     -Dsonar.login=$SONAR_AUTH_TOKEN \
-                    -Dsonar.host.url=$SONAR_URL \
-                    -Dsonar.java.libraries=target/dependency/*.jar \
-                    -Dsonar.externalIssuesReportPaths=$SARIF_FILE \
-                    -Dsonar.sarif.path=$SARIF_FILE
+                    -Dsonar.host.url=$SONAR_URL
                     """
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -57,7 +57,11 @@ pipeline {
         stage("Generate SARIF") {
             steps {
                 script {
-                    def sonarAnalysisId = sh(script: 'curl -s -u $SONAR_AUTH_TOKEN: "$SONAR_URL/api/ce/component?component=$PROJECT_KEY" | jq -r .current.analysisId', returnStdout: true).trim()
+                    def sonarAnalysisId = sh(script: '''
+                        curl -s -u $SONAR_AUTH_TOKEN: "$SONAR_URL/api/ce/component?component=$PROJECT_KEY" | \
+                        jq -r '.current.analysisId'
+                    ''', returnStdout: true).trim()
+                    
                     sh """
                     curl -o $SARIF_FILE -s -u $SONAR_AUTH_TOKEN: "$SONAR_URL/api/issues/export?projectKey=$PROJECT_KEY&statuses=OPEN,CONFIRMED&formats=sarif&sarifVersion=2.1.0&analysisId=$sonarAnalysisId"
                     """
@@ -73,7 +77,6 @@ pipeline {
                     curl -X POST \
                     -H "Authorization: token $GITHUB_TOKEN" \
                     -H "Accept: application/vnd.github.v3+json" \
-                    -H "Content-Type: application/x-www-form-urlencoded" \
                     -F "commit_sha=$commitSha" \
                     -F "ref=refs/heads/main" \
                     -F "sarif=@$SARIF_FILE" \
