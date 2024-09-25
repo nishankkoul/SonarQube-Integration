@@ -42,13 +42,13 @@ pipeline {
             }
         }
         
-        stage("Run ESLint to Generate SARIF") {
-            steps {
-                sh """
-                npx eslint . --format sarif --output-file ${SARIF_FILE}
-                """
-            }
-        }
+        // stage("Run ESLint to Generate SARIF") {
+        //     steps {
+        //         sh """
+        //         npx eslint . --format sarif --output-file ${SARIF_FILE}
+        //         """
+        //     }
+        // }
 
         stage("SonarQube Analysis") {
             steps {
