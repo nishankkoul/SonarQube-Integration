@@ -9,8 +9,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         GITHUB_TOKEN = credentials('github-token')
-        SONAR_AUTH_TOKEN = credentials('SONAR_AUTH_TOKEN')
-        SONAR_URL = "https://sonar.bimaplan.co/"
+        SONAR_URL = "https://sonar.bimaplan.co"
         PROJECT_KEY = "nishankkoul_SonarQube-Integration_666b06b4-e5b6-426e-8184-54e9b1a8da33"
         GITHUB_REPO = "nishankkoul/SonarQube-Integration"
         SARIF_FILE = "sonar-results.sarif"
@@ -27,7 +26,6 @@ pipeline {
             steps {
                 sh "mvn clean install -DskipTests"
                 sh "mvn dependency:copy-dependencies -DoutputDirectory=target/dependency"
-                sh "ls -R target"  // Debug: List contents of target directory
             }
         }
 
@@ -41,9 +39,7 @@ pipeline {
                     -Dsonar.sources=src/main/java \
                     -Dsonar.java.binaries=target/classes \
                     -Dsonar.java.libraries=target/dependency/*.jar \
-                    -Dsonar.login=$SONAR_AUTH_TOKEN \
-                    -Dsonar.host.url=$SONAR_URL \
-                    -X  # Enable debug mode
+                    -Dsonar.host.url=$SONAR_URL
                     """
                 }
             }
@@ -54,17 +50,8 @@ pipeline {
                 script {
                     def encodedProjectKey = URLEncoder.encode(PROJECT_KEY, "UTF-8")
                     withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_AUTH_TOKEN')]) {
-                        def rawResponse = sh(script: """
-                            curl -v -s -u \${SONAR_AUTH_TOKEN}: "${SONAR_URL}/api/ce/component?component=${encodedProjectKey}"
-                        """, returnStdout: true).trim()
-                        echo "Raw API Response: ${rawResponse}"
-                        
-                        if (rawResponse.contains("<!DOCTYPE html>")) {
-                            error "Received HTML response instead of JSON. Check authentication and API endpoint."
-                        }
-                        
                         def sonarAnalysisId = sh(script: """
-                            echo '${rawResponse}' | jq -r '.current.analysisId'
+                            curl -s -u \${SONAR_AUTH_TOKEN}: "${SONAR_URL}/api/ce/component?component=${encodedProjectKey}" | jq -r '.current.analysisId'
                         """, returnStdout: true).trim()
                         
                         if (sonarAnalysisId && sonarAnalysisId != "null") {
@@ -78,21 +65,40 @@ pipeline {
                     }
                 }
             }
-        } // <-- This closing bracket was missing
+        }
+
+        stage("Import SARIF to SonarQube") {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    sh """
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectName=SonarQube-Integration \
+                    -Dsonar.projectKey=$PROJECT_KEY \
+                    -Dsonar.sources=src/main/java \
+                    -Dsonar.java.binaries=target/classes \
+                    -Dsonar.java.libraries=target/dependency/*.jar \
+                    -Dsonar.host.url=$SONAR_URL \
+                    -Dsonar.sarifReportPaths=${SARIF_FILE}
+                    """
+                }
+            }
+        }
 
         stage("Upload SARIF to GitHub Code Scanning") {
             steps {
                 script {
                     def commitSha = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
-                    sh """
-                    curl -X POST \
-                    -H "Authorization: token $GITHUB_TOKEN" \
-                    -H "Accept: application/vnd.github.v3+json" \
-                    -F "commit_sha=$commitSha" \
-                    -F "ref=refs/heads/main" \
-                    -F "sarif=@$SARIF_FILE" \
-                    https://api.github.com/repos/$GITHUB_REPO/code-scanning/sarifs
-                    """
+                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                        sh """
+                        curl -X POST \
+                        -H "Authorization: token \${GITHUB_TOKEN}" \
+                        -H "Accept: application/vnd.github.v3+json" \
+                        -F "commit_sha=${commitSha}" \
+                        -F "ref=refs/heads/main" \
+                        -F "sarif=@${SARIF_FILE}" \
+                        https://api.github.com/repos/${GITHUB_REPO}/code-scanning/sarifs
+                        """
+                    }
                 }
             }
         }
