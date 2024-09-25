@@ -44,3 +44,6 @@ jobs:
             -Dsonar.projectName='SonarQube-Integration' \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+
+            
