@@ -59,11 +59,11 @@ pipeline {
                     def response = sh(
                         script: """
                         curl -X POST https://api.github.com/repos/${GITHUB_REPO}/code-scanning/sarifs \
-                        -H "Authorization: token ${GITHUB_TOKEN}" \
+                        -H "Authorization: token $GITHUB_TOKEN" \
                         -H "Accept: application/vnd.github.v3+json" \
                         -F "commit_sha=$(git rev-parse HEAD)" \
                         -F "ref=refs/heads/main" \
-                        -F "sarif=@${SARIF_FILE}"
+                        -F "sarif=@$SARIF_FILE"
                         """, 
                         returnStdout: true
                     ).trim()
