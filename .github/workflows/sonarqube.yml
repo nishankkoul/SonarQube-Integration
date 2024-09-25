@@ -34,32 +34,13 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
-      - name: Install Sonar Scanner
-        run: |
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/4.8.0.2856/sonar-scanner-cli-4.8.0.2856-linux.zip
-          unzip sonar-scanner.zip -d sonar-scanner
-          sudo mv sonar-scanner/* /usr/local/bin/
-          rm -rf sonar-scanner sonar-scanner.zip
-      
       - name: Build and Analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Your SonarQube token
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}  # Your SonarQube host URL
         run: |
-          mvn -B verify  # Build the project
-          sonar-scanner \
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=nishankkoul_SonarQube-Integration_31e1e31b-01b8-4710-ba95-795bf79e7f58 \
             -Dsonar.projectName='SonarQube-Integration' \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.sources=. \
-            -Dsonar.language=java \
-            -Dsonar.sourceEncoding=UTF-8 \
-            -Dsonar.pullrequest.base=main \
-            -Dsonar.pullrequest.head=${{ github.sha }} \
-            -Dsonar.pullrequest.provider=github
-      
-      - name: Upload Code Scanning Results
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ./path/to/your/sonar-report.sarif  # Update this with the correct path to your SARIF file
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
