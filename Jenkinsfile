@@ -49,30 +49,34 @@ pipeline {
             }
         }
 
-        stage("Generate SARIF") {
+stage("Generate SARIF") {
             steps {
                 script {
                     def encodedProjectKey = URLEncoder.encode(PROJECT_KEY, "UTF-8")
-                    def rawResponse = sh(script: """
-                        curl -s -u $SONAR_AUTH_TOKEN: "$SONAR_URL/api/ce/component?component=${encodedProjectKey}"
-                    """, returnStdout: true).trim()
-                    echo "Raw API Response: ${rawResponse}"
-                    
-                    def sonarAnalysisId = sh(script: """
-                        echo '${rawResponse}' | jq -r '.current.analysisId'
-                    """, returnStdout: true).trim()
-                    
-                    if (sonarAnalysisId && sonarAnalysisId != "null") {
-                        echo "Analysis ID: ${sonarAnalysisId}"
-                        sh """
-                        curl -o $SARIF_FILE -s -u $SONAR_AUTH_TOKEN: "$SONAR_URL/api/issues/export?projectKey=${encodedProjectKey}&statuses=OPEN,CONFIRMED&formats=sarif&sarifVersion=2.1.0&analysisId=${sonarAnalysisId}"
-                        """
-                    } else {
-                        error "Failed to retrieve SonarQube analysis ID"
+                    withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_AUTH_TOKEN')]) {
+                        def rawResponse = sh(script: """
+                            curl -v -s -u \${SONAR_AUTH_TOKEN}: "${SONAR_URL}/api/ce/component?component=${encodedProjectKey}"
+                        """, returnStdout: true).trim()
+                        echo "Raw API Response: ${rawResponse}"
+                        
+                        if (rawResponse.contains("<!DOCTYPE html>")) {
+                            error "Received HTML response instead of JSON. Check authentication and API endpoint."
+                        }
+                        
+                        def sonarAnalysisId = sh(script: """
+                            echo '${rawResponse}' | jq -r '.current.analysisId'
+                        """, returnStdout: true).trim()
+                        
+                        if (sonarAnalysisId && sonarAnalysisId != "null") {
+                            echo "Analysis ID: ${sonarAnalysisId}"
+                            sh """
+                            curl -o ${SARIF_FILE} -s -u \${SONAR_AUTH_TOKEN}: "${SONAR_URL}/api/issues/export?projectKey=${encodedProjectKey}&statuses=OPEN,CONFIRMED&formats=sarif&sarifVersion=2.1.0&analysisId=${sonarAnalysisId}"
+                            """
+                        } else {
+                            error "Failed to retrieve SonarQube analysis ID"
+                        }
                     }
                 }
-            }
-        }
 
         stage("Upload SARIF to GitHub Code Scanning") {
             steps {
