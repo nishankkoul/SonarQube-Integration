@@ -9,16 +9,17 @@
       "eslint": "^9.11.1" 
     },
     "eslintConfig": {
-      "env": {
-        "browser": true,
-        "es2021": true
-      },
-      "extends": "eslint:recommended",
-      "parserOptions": {
-        "ecmaVersion": 12
+      "languageOptions": {
+        "globals": {
+          "window": "readonly",
+          "document": "readonly"
+        },
+        "parserOptions": {
+          "ecmaVersion": 12
+        }
       }
     },
-    "author": "Your Name",
+    "author": "Nishank Koul",
     "license": "MIT"
   }
   
