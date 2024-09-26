@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent any 
     
     tools {
         jdk 'jdk17'
@@ -8,46 +8,42 @@ pipeline {
     
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        // GITHUB_TOKEN = credentials('github-token')
-        SONAR_URL = "http://3.142.47.225:8080/"
-        PROJECT_KEY = "nishankkoul_SonarQube-Integration"
-        GITHUB_REPO = "nishankkoul/SonarQube-Integration"
     }
     
     stages {
+        
         stage("Git Checkout") {
             steps {
-                git branch: 'main', url: "https://github.com/${GITHUB_REPO}.git"
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/nishankkoul/SonarQube-Integration.git'
             }
         }
-
-        stage("Build and Test") {
+        
+        stage("Compile") {
             steps {
-                sh "mvn clean install -DskipTests"
-                sh "mvn dependency:copy-dependencies -DoutputDirectory=target/dependency"
+                sh "mvn clean compile"
             }
         }
 
-        stage("SonarQube Analysis") {
+        stage("Test Cases"){
+            steps{
+                sh "mvn test"
+            }
+        }
+        
+        stage("Sonarqube Analysis") {
+            environment {
+                SONAR_URL = "http://3.132.202.39:9000/" 
+            }
             steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh """
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectName=SonarQube-Integration \
-                    -Dsonar.projectKey=$PROJECT_KEY \
-                    -Dsonar.sources=src/main/java \
-                    -Dsonar.java.binaries=target/classes \
-                    -Dsonar.java.libraries=target/dependency/*.jar \
-                    -Dsonar.host.url=$SONAR_URL
-                    """
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectName=Petclinic \
+                    -Dsonar.java.binaries=. \
+                    -Dsonar.projectKey=Petclinic \
+                    -Dsonar.login=${SONAR_AUTH_TOKEN} \
+                    -Dsonar.host.url=${SONAR_URL}'''
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }
